@@ -1,0 +1,120 @@
+package com.thoughtworks.todoapp.services;
+
+import com.thoughtworks.todoapp.models.ERole;
+import com.thoughtworks.todoapp.models.Role;
+import com.thoughtworks.todoapp.models.User;
+import com.thoughtworks.todoapp.dtos.payload.request.LoginRequest;
+import com.thoughtworks.todoapp.dtos.payload.request.SignupRequest;
+import com.thoughtworks.todoapp.dtos.payload.responce.JwtResponse;
+import com.thoughtworks.todoapp.dtos.payload.responce.MessageResponse;
+import com.thoughtworks.todoapp.repositories.RoleRepository;
+import com.thoughtworks.todoapp.repositories.TokenRepository;
+import com.thoughtworks.todoapp.repositories.UserRepository;
+import com.thoughtworks.todoapp.security.jwt.JwtUtils;
+import com.thoughtworks.todoapp.security.services.UserDetailsImpl;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+public class UserControllerService {
+
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder encoder;
+    private final JwtUtils jwtUtils;
+    private final SequenceGeneratorService sequenceGeneratorService;
+    private final TokenService tokenService;
+
+    public UserControllerService(AuthenticationManager authenticationManager,
+                                 UserRepository userRepository,
+                                 RoleRepository roleRepository,
+                                 PasswordEncoder encoder,
+                                 JwtUtils jwtUtils,
+                                 SequenceGeneratorService sequenceGeneratorService,
+                                 TokenRepository tokenRepository,
+                                 TokenService tokenService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+        this.sequenceGeneratorService = sequenceGeneratorService;
+        this.tokenService = tokenService;
+    }
+
+    public ResponseEntity<?> registerUser(SignupRequest signUpRequest) {
+
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
+
+        // Create new user's account
+        User user = new User(signUpRequest.getFirstName(),
+                signUpRequest.getLastName(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()));
+
+        Set<String> strRoles = signUpRequest.getRoles();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.USER)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                if (role.equals("admin")) {
+                    Role adminRole = roleRepository.findByName(ERole.ADMIN)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(adminRole);
+                } else {
+                    Role userRole = roleRepository.findByName(ERole.USER)
+                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    roles.add(userRole);
+                }
+            });
+        }
+
+        user.setRoles(roles);
+        user.setId(sequenceGeneratorService.generateSequence(User.SEQUENCE_NAME));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        tokenService.storeTokenIntoDB(jwt, userDetails);
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getFirstName(),
+                userDetails.getLastName(),
+                userDetails.getEmail(),
+                roles));
+    }
+}
