@@ -1,13 +1,10 @@
 package com.thoughtworks.todoapp.services;
 
-import com.thoughtworks.todoapp.models.ERole;
-import com.thoughtworks.todoapp.models.Role;
 import com.thoughtworks.todoapp.models.User;
 import com.thoughtworks.todoapp.dtos.payload.request.LoginRequest;
 import com.thoughtworks.todoapp.dtos.payload.request.SignupRequest;
 import com.thoughtworks.todoapp.dtos.payload.responce.JwtResponse;
 import com.thoughtworks.todoapp.dtos.payload.responce.MessageResponse;
-import com.thoughtworks.todoapp.repositories.RoleRepository;
 import com.thoughtworks.todoapp.repositories.TokenRepository;
 import com.thoughtworks.todoapp.repositories.UserRepository;
 import com.thoughtworks.todoapp.security.jwt.JwtUtils;
@@ -20,9 +17,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
+
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +26,6 @@ public class UserControllerService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
     private final SequenceGeneratorService sequenceGeneratorService;
@@ -38,7 +33,6 @@ public class UserControllerService {
 
     public UserControllerService(AuthenticationManager authenticationManager,
                                  UserRepository userRepository,
-                                 RoleRepository roleRepository,
                                  PasswordEncoder encoder,
                                  JwtUtils jwtUtils,
                                  SequenceGeneratorService sequenceGeneratorService,
@@ -46,7 +40,6 @@ public class UserControllerService {
                                  TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.sequenceGeneratorService = sequenceGeneratorService;
@@ -67,28 +60,6 @@ public class UserControllerService {
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()));
 
-        Set<String> strRoles = signUpRequest.getRoles();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                if (role.equals("admin")) {
-                    Role adminRole = roleRepository.findByName(ERole.ADMIN)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(adminRole);
-                } else {
-                    Role userRole = roleRepository.findByName(ERole.USER)
-                            .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                    roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
         user.setId(sequenceGeneratorService.generateSequence(User.SEQUENCE_NAME));
         userRepository.save(user);
 

@@ -65,8 +65,7 @@ public class ProjectService {
         UserDTO userDTO = new UserDTO(user.get().getId(),
                 user.get().getFirstName(),
                 user.get().getLastName(),
-                user.get().getEmail(),
-                user.get().getRoles());
+                user.get().getEmail());
         data.setId(sequenceGeneratorService.generateSequence(Project.SEQUENCE_NAME));
         data.setUser(userDTO);
         Project project = projectRepository.save(data);

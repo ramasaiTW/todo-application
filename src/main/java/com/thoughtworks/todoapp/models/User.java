@@ -42,9 +42,6 @@ public class User {
     @Size(max = 120)
     private String password;
 
-    @DBRef
-    private Set<Role> roles = new HashSet<>();
-
     public User(String firstName, String lastName, String email, String password) {
         this.firstName = firstName;
         this.lastName = lastName;

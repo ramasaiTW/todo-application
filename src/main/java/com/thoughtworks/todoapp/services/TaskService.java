@@ -63,8 +63,7 @@ public class TaskService {
         UserDTO userDTO = new UserDTO(user.get().getId(),
                 user.get().getFirstName(),
                 user.get().getLastName(),
-                user.get().getEmail(),
-                user.get().getRoles());
+                user.get().getEmail());
 
         data.setId(sequenceGeneratorService.generateSequence(Task.SEQUENCE_NAME));
         data.setUser(userDTO);
