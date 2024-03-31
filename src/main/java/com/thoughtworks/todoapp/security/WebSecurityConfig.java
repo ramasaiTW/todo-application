@@ -73,7 +73,12 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**")
+                        .permitAll()
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
