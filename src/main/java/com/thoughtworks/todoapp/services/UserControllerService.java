@@ -1,5 +1,6 @@
 package com.thoughtworks.todoapp.services;
 
+import com.thoughtworks.todoapp.exceptions.EmailExistsException;
 import com.thoughtworks.todoapp.models.User;
 import com.thoughtworks.todoapp.dtos.payload.request.LoginRequest;
 import com.thoughtworks.todoapp.dtos.payload.request.SignupRequest;
@@ -50,9 +51,7 @@ public class UserControllerService {
     public ResponseEntity<?> registerUser(SignupRequest signUpRequest) {
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+            throw new EmailExistsException("Email is already in use!");
         }
 
         // Create new user's account

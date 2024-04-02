@@ -13,4 +13,9 @@ public class ProjectDTO {
     private long id;
     private String title;
     private String description;
+
+    public ProjectDTO(String title, String description) {
+        this.title = title;
+        this.description = description;
+    }
 }
