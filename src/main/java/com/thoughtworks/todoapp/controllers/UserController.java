@@ -25,30 +25,11 @@ public class UserController {
         this.userControllerService = userControllerService;
     }
 
-
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = SignupRequest.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid details supplied",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong",
-                    content = @Content)})
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         return userControllerService.registerUser(signUpRequest);
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Logged in Successfully",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = LoginRequest.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid request ",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "User not found",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong",
-                    content = @Content)})
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         return userControllerService.authenticateUser(loginRequest);

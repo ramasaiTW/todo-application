@@ -1,2 +1,7 @@
-package com.thoughtworks.todoapp.exceptions;public class EmailExistsException {
+package com.thoughtworks.todoapp.exceptions;
+
+public class EmailExistsException extends RuntimeException {
+    public EmailExistsException(String message) {
+        super(message);
+    }
 }

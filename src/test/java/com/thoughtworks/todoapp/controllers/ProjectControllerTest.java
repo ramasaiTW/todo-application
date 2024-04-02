@@ -96,8 +96,9 @@ public class ProjectControllerTest {
         String jwt = "Bearer "+tokenRepository.findByUser_Email(firstEmail).getToken();
         Token token = tokenRepository.findByUser_Email(firstEmail);
         long id = token.getUser().getId();
+        long projectId = projectRepository.findAllByUserId(id).get().get(0).getId();
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/v1/projects/1")
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/projects/"+projectId)
                         .header(HttpHeaders.AUTHORIZATION, jwt))
                 .andExpect(status().isOk()).andReturn();
 
@@ -111,7 +112,7 @@ public class ProjectControllerTest {
         Token token = tokenRepository.findByUser_Email(firstEmail);
         String jwt = "Bearer "+token.getToken();
         long id = token.getUser().getId();
-        long projectsId = projectRepository.findAllByUserId(id).get(0).getId();
+        long projectsId = projectRepository.findAllByUserId(id).get().get(0).getId();
 
         Project project = new Project();
 
@@ -131,7 +132,7 @@ public class ProjectControllerTest {
         Token token = tokenRepository.findByUser_Email(firstEmail);
         String jwt = "Bearer "+token.getToken();
         long id = token.getUser().getId();
-        long projectId = projectRepository.findAllByUserId(id).get(0).getId();
+        long projectId = projectRepository.findAllByUserId(id).get().get(0).getId();
 
         Project project = new Project();
 

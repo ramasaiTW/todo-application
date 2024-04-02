@@ -1,6 +1,8 @@
 package com.thoughtworks.todoapp.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thoughtworks.todoapp.dtos.ProjectDTO;
+import com.thoughtworks.todoapp.models.Project;
 import com.thoughtworks.todoapp.models.Task;
 import com.thoughtworks.todoapp.models.Token;
 import com.thoughtworks.todoapp.repositories.TaskRepository;
@@ -64,6 +66,8 @@ public class TaskControllerTest {
         String firstEmail = userRepository.findAll().get(0).getEmail();
         String jwt = "Bearer "+tokenRepository.findByUser_Email(firstEmail).getToken();
         Task task = new Task();
+        ProjectDTO projectDTO = new ProjectDTO("Test", "Test");
+        task.setProject(projectDTO);
 
         MvcResult mvcResult = mockMvc.perform(post("/api/v1/tasks")
                         .header(HttpHeaders.AUTHORIZATION, jwt)
@@ -93,9 +97,10 @@ public class TaskControllerTest {
         String firstEmail = userRepository.findAll().get(0).getEmail();
         String jwt = "Bearer "+tokenRepository.findByUser_Email(firstEmail).getToken();
         Token token = tokenRepository.findByUser_Email(firstEmail);
-        long id = token.getUser().getId();;
+        int id = (int) token.getUser().getId();;
+        long taskId = taskRepository.findAllByUserId(id).get().get(0).getId();
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/v1/tasks/1")
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/tasks/"+taskId)
                         .header(HttpHeaders.AUTHORIZATION, jwt))
                 .andExpect(status().isOk()).andReturn();
 
@@ -109,7 +114,7 @@ public class TaskControllerTest {
         Token token = tokenRepository.findByUser_Email(firstEmail);
         String jwt = "Bearer "+token.getToken();
         long id = token.getUser().getId();
-        long taskId = taskRepository.findAllByUserId(id).get(0).getId();
+        long taskId = taskRepository.findAllByUserId(id).get().get(0).getId();
 
         Task task = new Task();
 
@@ -129,7 +134,7 @@ public class TaskControllerTest {
         Token token = tokenRepository.findByUser_Email(firstEmail);
         String jwt = "Bearer "+token.getToken();
         long id = token.getUser().getId();
-        long taskId = taskRepository.findAllByUserId(id).get(0).getId();
+        long taskId = taskRepository.findAllByUserId(id).get().get(0).getId();
 
         Task task = new Task();
 

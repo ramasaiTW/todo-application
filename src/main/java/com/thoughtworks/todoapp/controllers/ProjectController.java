@@ -1,5 +1,6 @@
 package com.thoughtworks.todoapp.controllers;
 
+import com.thoughtworks.todoapp.exceptions.DataNotFoundException;
 import com.thoughtworks.todoapp.models.Project;
 import com.thoughtworks.todoapp.services.ProjectService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,70 +23,28 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "All projects found",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Project.class)) }),
-            @ApiResponse(responseCode = "404", description = "Projects not found",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong",
-                    content = @Content)})
     @GetMapping()
-    public ResponseEntity<List<Project>> getAllProjects(HttpServletRequest request){
+    public ResponseEntity<List<Project>> getAllProjects(HttpServletRequest request) throws DataNotFoundException {
         return projectService.getAllProjects(request);
     }
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Project Found",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Project.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid id supplied",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Project not found",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong",
-                    content = @Content)})
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> getProjectById(HttpServletRequest request, @PathVariable("id") int id){
+    public ResponseEntity<Project> getProjectById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
         return projectService.getProjectById(request, id);
     }
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Project created",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Project.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid Project data supplied",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong")})
+
     @PostMapping()
     public ResponseEntity<Project> createProject(HttpServletRequest request, @RequestBody Project data){
         return projectService.createProject(request, data);
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Project updated successfully",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Project.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid project-id supplied",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Project not found",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong")})
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(HttpServletRequest request, @PathVariable int id, @RequestBody Project data){
+    public ResponseEntity<Project> updateProject(HttpServletRequest request, @PathVariable int id, @RequestBody Project data) throws DataNotFoundException {
         return projectService.updateProject(request, id, data);
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Project deleted successfully",
-                    content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Project.class)) }),
-            @ApiResponse(responseCode = "400", description = "Invalid project-id supplied",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Project not found",
-                    content = @Content),
-            @ApiResponse(responseCode ="500", description = "Oops, Something went wrong")})
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, @PathVariable int id){
+    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, @PathVariable int id) throws DataNotFoundException {
         return projectService.deleteProjectById(request, id);
     }
 }
