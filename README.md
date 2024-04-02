@@ -22,7 +22,7 @@ TaskMaster is like a special tool to help people get things done. You and your t
 ***Fix Bugs:*** Sometimes things don't work the way they should. Your job is to find those problems and fix them so TaskMaster runs smoothly for everyone.
 
 ## Requirements:
-This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing.
+This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing. Data will stored on MongoDB
 
 - Java 17 or higher.
 - Spring Boot 3
@@ -30,9 +30,32 @@ This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven
 - Maven
 - JWT
 - Swagger UI
+- MongoDB
+
+### Download MongoDB
+- Go to the MongoDB download page: MongoDB Download
+- Choose the appropriate version for Windows.
+- Download and Install MongoDB
+#### Start MongoDB Server
+Open a command prompt with administrative privileges (right-click on Command Prompt and select "Run as administrator").
+Run the following command to start the MongoDB server:
+#### Windows
+```
+mongod
+```
+or
+```
+net start MongoDB
+```
+#### MacOS
+```
+brew services stop mongodb
+```
+
+Ensure that the "Install MongoDB Compass" option is selected if you want to install Compass, MongoDB's GUI client.
 
 ## Useful Maven Commands
-The project uses Maven for dependency management and building. Here are some useful 
+The project uses Maven for dependency management and building. Here are some useful
 Maven commands:
 
 ### List all Maven tasks
@@ -139,8 +162,8 @@ Response:
 This endpoint allows users to create a task into the application.
 
 **Headers Required:**
-  - `Content-Type: application/json`
-  - `Authorization: Bearer <Jwt Token>`
+- `Content-Type: application/json`
+- `Authorization: Bearer <Jwt Token>`
 
 ```
 PUT /api/v1/tasks/{id}
@@ -150,8 +173,8 @@ PUT /api/v1/tasks/{id}
 This endpoint allows users to update a task in the application.
 
 **Headers Required:**
-  - `Content-Type: application/json`
-  - `Authorization: Bearer <Jwt Token>`
+- `Content-Type: application/json`
+- `Authorization: Bearer <Jwt Token>`
 ```
 POST /api/v1/tasks
 ```
@@ -160,7 +183,7 @@ POST /api/v1/tasks
 This endpoint allows users to get all tasks in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 GET /api/v1/tasks
 ```
@@ -169,7 +192,7 @@ GET /api/v1/tasks
 This endpoint allows users to get a task by Id in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 GET /api/v1/tasks/{id}
 ```
@@ -178,7 +201,7 @@ GET /api/v1/tasks/{id}
 This endpoint allows users to delete a task by Id in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 DELETE /api/v1/tasks/{id}
 ```
@@ -188,8 +211,8 @@ DELETE /api/v1/tasks/{id}
 This endpoint allows users to create a project into the application.
 
 **Headers Required:**
-  - `Content-Type: application/json`
-  - `Authorization: Bearer <Jwt Token>`
+- `Content-Type: application/json`
+- `Authorization: Bearer <Jwt Token>`
 ```
 POST /api/v1/projects
 ```
@@ -198,8 +221,8 @@ POST /api/v1/projects
 This endpoint allows users to update a project in the application.
 
 **Headers Required:**
-  - `Content-Type: application/json`
-  - `Authorization: Bearer <Jwt Token>`
+- `Content-Type: application/json`
+- `Authorization: Bearer <Jwt Token>`
 ```
 PUT /api/v1/projects/{id}
 ```
@@ -208,7 +231,7 @@ PUT /api/v1/projects/{id}
 This endpoint allows users to get all projects in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 GET /api/v1/projects
 ```
@@ -217,7 +240,7 @@ GET /api/v1/projects
 This endpoint allows users to get a project by Id in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 GET /api/v1/projects/{id}
 ```
@@ -226,7 +249,7 @@ GET /api/v1/projects/{id}
 This endpoint allows users to delete a project by Id in the application.
 
 **Headers Required:**
-  - `Authorization: Bearer <Jwt Token>`
+- `Authorization: Bearer <Jwt Token>`
 ```
 DELETE /api/v1/projects/{id}
 ```
