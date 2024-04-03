@@ -52,8 +52,28 @@ net start MongoDB
 brew services stop mongodb
 ```
 
-Ensure that the "Install MongoDB Compass" option is selected if you want to install Compass, MongoDB's GUI client.
+#### Install MongoDB Compass
+Ensure that the "Install MongoDB Compass" option is selected if you want to install Compass.
 
+In MongoDB Compass, you need to connect to your MongoDB server. Click on the "Connect" button on the welcome screen or use the "New Connection" button if you're already connected to a server.
+
+#### Create New Database
+To create a new database, click on the "Create Database" button, usually located at the bottom of the database list.
+
+#### Enter Database Name
+Enter the name as TaskMaster of your new database name in the "Database Name" field.
+Once you've entered the desired database name and settings, click on the "Create" button to create the new database.
+
+## Spring and DB connection
+In this application, you need to configure the connection properties for your chosen database. This is usually done in the application.properties.
+Check the connection details.
+
+```
+#MongoDB
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=taskmaster
+```
 ## Useful Maven Commands
 The project uses Maven for dependency management and building. Here are some useful
 Maven commands:
