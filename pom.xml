@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.thoughtworks</groupId>
-	<artifactId>todoapp</artifactId>
+	<artifactId>taskmaster</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>todoapp</name>
+	<name>taskmaster</name>
 	<description>This application allows users to manage their tasks effectively.</description>
 	<properties>
 		<java.version>17</java.version>
