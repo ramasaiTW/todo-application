@@ -61,7 +61,7 @@ In MongoDB Compass, you need to connect to your MongoDB server. Click on the "Co
 To create a new database, click on the "Create Database" button, usually located at the bottom of the database list.
 
 #### Enter Database Name
-Enter the name as TaskMaster of your new database name in the "Database Name" field.
+Enter the name as "taskmaster" of your new database name in the "Database Name" field.
 Once you've entered the desired database name and settings, click on the "Create" button to create the new database.
 
 ## Spring and DB connection
