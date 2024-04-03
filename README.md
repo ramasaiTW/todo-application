@@ -22,7 +22,7 @@ TaskMaster is like a special tool to help people get things done. You and your t
 ***Fix Bugs:*** Sometimes things don't work the way they should. Your job is to find those problems and fix them so TaskMaster runs smoothly for everyone.
 
 ## Requirements:
-This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing. Data will stored on MongoDB
+This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing. Data will store on MongoDB
 
 - Java 17 or higher.
 - Spring Boot 3
@@ -116,9 +116,9 @@ mvn verify
 Below is a list of API endpoints with their respective input and output. Please note that the application needs to be running for the following endpoints to work. For more information about how to run the application, please refer to run the application section above.
 
 #### Accessing APIs
-- JWT Token is not required for Signup and Login API's.
-- Other API's required JWT Token.
-- Login API's will give the JWT Token, you can use this JWT Token to access other API's
+- JWT Token is not required for Signup and Login APIs.
+- Other APIs required JWT Token.
+- Login APIs will give the JWT Token, you can use this JWT Token to access other APIs
 - Include the JWT token: Add the received JWT token to the request header for subsequent API calls.
 ```
 Authorization: "Bearer <JWT Token>"
@@ -139,12 +139,12 @@ Request body
   "password": "<string>"
 }
 ```
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
+| Parameter   | Type     | Description                                    |
+|:------------|:---------|:-----------------------------------------------|
 | `firstName` | `string` | **Required**. Enter the first name of the user |
-| `lastName` | `string` | **Required**. Enter the last name of the user |
-| `email` | `string` | **Required**. Enter the email of the user |
-| `password` | `string` | **Required**. Enter the password of the user |
+| `lastName`  | `string` | **Required**. Enter the last name of the user  |
+| `email`     | `string` | **Required**. Enter the email of the user      |
+| `password`  | `string` | **Required**. Enter the password of the user   |
 
 #### Login Request
 This endpoint allows users to login.
@@ -158,9 +158,9 @@ Request body
   "password": "<string>"
 }
 ```
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `email` | `string` | **Required**. Enter the email of the eser |
+| Parameter  | Type     | Description                                  |
+|:-----------|:---------|:---------------------------------------------|
+| `email`    | `string` | **Required**. Enter the email of the eser    |
 | `password` | `string` | **Required**. Enter the password of the eser |
 
 Response:
@@ -209,7 +209,7 @@ GET /api/v1/tasks
 ```
 
 #### Get Task By Id
-This endpoint allows users to get a task by Id in the application.
+This endpoint allows users to get a task by ID in the application.
 
 **Headers Required:**
 - `Authorization: Bearer <Jwt Token>`
@@ -218,7 +218,7 @@ GET /api/v1/tasks/{id}
 ```
 
 #### Delete Task By Id
-This endpoint allows users to delete a task by Id in the application.
+This endpoint allows users to delete a task by ID in the application.
 
 **Headers Required:**
 - `Authorization: Bearer <Jwt Token>`
@@ -256,8 +256,8 @@ This endpoint allows users to get all projects in the application.
 GET /api/v1/projects
 ```
 
-#### Get Project By Id
-This endpoint allows users to get a project by Id in the application.
+#### Get Project By ID
+This endpoint allows users to get a project by ID in the application.
 
 **Headers Required:**
 - `Authorization: Bearer <Jwt Token>`
@@ -266,7 +266,7 @@ GET /api/v1/projects/{id}
 ```
 
 #### Delete Project By Id
-This endpoint allows users to delete a project by Id in the application.
+This endpoint allows users to delete a project by ID in the application.
 
 **Headers Required:**
 - `Authorization: Bearer <Jwt Token>`
