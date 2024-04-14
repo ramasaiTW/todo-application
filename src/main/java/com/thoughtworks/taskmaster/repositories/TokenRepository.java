@@ -1,9 +1,9 @@
 package com.thoughtworks.taskmaster.repositories;
 
 import com.thoughtworks.taskmaster.models.Token;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TokenRepository extends MongoRepository<Token, Integer> {
+public interface TokenRepository extends JpaRepository<Token, Integer> {
 
     boolean existsByUser_Email(String email);
 

@@ -1,4 +1,4 @@
-package com.thoughtworks.taskmaster.dtos.payload.responce;
+package com.thoughtworks.taskmaster.dtos.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

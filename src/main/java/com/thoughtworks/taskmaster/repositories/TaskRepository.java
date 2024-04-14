@@ -1,13 +1,15 @@
 package com.thoughtworks.taskmaster.repositories;
 
 import com.thoughtworks.taskmaster.models.Task;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TaskRepository extends MongoRepository<Task, Integer> {
+public interface TaskRepository extends JpaRepository<Task, Integer> {
+
     Optional<List<Task>> findAllByUserId(long userId);
+
     Optional<Task> findByIdAndUser_Id(long taskId, long userId);
 }
