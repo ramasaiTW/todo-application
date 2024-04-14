@@ -49,7 +49,7 @@ net start MongoDB
 ```
 #### MacOS
 ```
-brew services stop mongodb
+brew services start mongodb
 ```
 
 #### Install MongoDB Compass
