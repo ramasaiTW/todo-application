@@ -1,5 +1,7 @@
 package com.thoughtworks.taskmaster.controllers;
 
+import com.thoughtworks.taskmaster.dtos.payload.request.ProjectRequest;
+import com.thoughtworks.taskmaster.dtos.payload.response.ProjectResponse;
 import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
 import com.thoughtworks.taskmaster.models.Project;
 import com.thoughtworks.taskmaster.services.ProjectService;
@@ -19,24 +21,25 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
+
     @GetMapping()
-    public ResponseEntity<List<Project>> getAllProjects(HttpServletRequest request) throws DataNotFoundException {
+    public ResponseEntity<List<ProjectResponse>> getAllProjects(HttpServletRequest request) throws DataNotFoundException {
         return projectService.getAllProjects(request);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> getProjectById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
         return projectService.getProjectById(request, id);
     }
 
     @PostMapping()
-    public ResponseEntity<Project> createProject(HttpServletRequest request, @RequestBody Project data){
-        return projectService.createProject(request, data);
+    public ResponseEntity<ProjectResponse> createProject(HttpServletRequest request, @RequestBody ProjectRequest projectRequestData){
+        return projectService.createProject(request, projectRequestData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(HttpServletRequest request, @PathVariable int id, @RequestBody Project data) throws DataNotFoundException {
-        return projectService.updateProject(request, id, data);
+    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, @PathVariable int id, @RequestBody ProjectRequest projectRequestData) throws DataNotFoundException {
+        return projectService.updateProject(request, id, projectRequestData);
     }
 
     @DeleteMapping("/{id}")

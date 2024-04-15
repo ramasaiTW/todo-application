@@ -1,5 +1,8 @@
 package com.thoughtworks.taskmaster.services;
 
+import com.thoughtworks.taskmaster.dtos.ProjectDTO;
+import com.thoughtworks.taskmaster.dtos.payload.request.ProjectRequest;
+import com.thoughtworks.taskmaster.dtos.payload.response.ProjectResponse;
 import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
 import com.thoughtworks.taskmaster.models.Project;
 import com.thoughtworks.taskmaster.models.User;
@@ -11,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProjectService {
@@ -34,7 +34,7 @@ public class ProjectService {
         this.tokenService = tokenService;
     }
 
-    public ResponseEntity<List<Project>> getAllProjects(HttpServletRequest request) throws DataNotFoundException {
+    public ResponseEntity<List<ProjectResponse>> getAllProjects(HttpServletRequest request) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -45,10 +45,16 @@ public class ProjectService {
         if (projects.isPresent() && projects.get().isEmpty()) {
             throw new DataNotFoundException("Projects not found!!!");
         }
-        return ResponseEntity.ok().body(projects.get());
+
+        List<ProjectResponse> projectResponses = new ArrayList<>();
+        for(int i=0; i<projects.get().size(); i++){
+            projectResponses.add(convertProjectToProjectResponse(projects.get().get(i)));
+        }
+
+        return ResponseEntity.ok().body(projectResponses);
     }
 
-    public ResponseEntity<Project> getProjectById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, int id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -60,22 +66,33 @@ public class ProjectService {
             throw new DataNotFoundException("Project not found!!!");
         }
 
-        return ResponseEntity.ok().body(project.get());
+        ProjectResponse projectResponse = convertProjectToProjectResponse(project.get());
+
+        return ResponseEntity.ok().body(projectResponse);
     }
 
-    public ResponseEntity<Project> createProject(HttpServletRequest request, Project data) {
+    public ResponseEntity<ProjectResponse> createProject(HttpServletRequest request, ProjectRequest projectRequestData) {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
+        if (!projectRepository.existsByTitle(projectRequestData.getTitle())){
+            throw new DataNotFoundException("Project Already In Use");
+        }
+
         int userId = jwtUtils.getUserIdFromToken(request);
         Optional<User> user = userRepository.findById(userId);
-        data.setUser(user.get());
-        Project project = projectRepository.save(data);
-        return ResponseEntity.ok().body(project);
+
+        Project projectData = convertProjectRequestToProject(projectRequestData, user.get());
+
+        Project project = projectRepository.save(projectData);
+
+        ProjectResponse projectResponse = convertProjectToProjectResponse(project);
+
+        return ResponseEntity.ok().body(projectResponse);
     }
 
-    public ResponseEntity<Project> updateProject(HttpServletRequest request, int id, Project data) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, int id, ProjectRequest projectRequestData) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -88,14 +105,16 @@ public class ProjectService {
         }
 
         if (project.get().getTitle() != null) {
-            project.get().setTitle(data.getTitle());
+            project.get().setTitle(projectRequestData.getTitle());
         }
         if (project.get().getDescription() != null) {
-            project.get().setDescription(data.getDescription());
+            project.get().setDescription(projectRequestData.getDescription());
         }
 
-        projectRepository.save(project.get());
-        return ResponseEntity.ok().body(project.get());
+        Project updateProject = projectRepository.save(project.get());
+        ProjectResponse projectResponse = convertProjectToProjectResponse(updateProject);
+
+        return ResponseEntity.ok().body(projectResponse);
     }
 
     public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, int id) throws DataNotFoundException {
@@ -116,53 +135,56 @@ public class ProjectService {
         return ResponseEntity.ok().body(response);
     }
 
-    public Project updateProjectAlongWithTask(Project project, long userId) {
-        Optional<Project> projectData = projectRepository.findByIdAndUser_Id(project.getId(), userId);
-
-        if (projectData.isEmpty()) {
-            throw new DataNotFoundException("Project not found!!!");
-        }
-
-        if (project.getTitle() != null) {
-            projectData.get().setTitle(project.getTitle());
-        }
-        if (project.getDescription() != null) {
-            projectData.get().setDescription(project.getDescription());
-        }
-
-        Project projectSave = projectRepository.save(projectData.get());
-
-        project.setTitle(projectSave.getTitle());
-        project.setDescription(projectSave.getDescription());
-
-        return project;
-    }
-
-    public Project createProjectAlongWithTask(Project project, int userId) {
-        Optional<List<Project>> allProjects = projectRepository.findAllByUserId(userId);
-
-        if (allProjects.isPresent() && !allProjects.get().isEmpty()) {
-            for (int i = 0; i < allProjects.get().size(); i++) {
-                if (allProjects.get().get(i).getTitle().equals(project.getTitle())) {
-                    return allProjects.get().get(i);
-                }
-            }
-        }
+    public Project createProjectAlongWithTask(ProjectDTO projectDTO, int userId) {
 
         Optional<User> user = userRepository.findById(userId);
+        boolean isPersonalProjectInDB = projectRepository.existsByTitle("Personal");
 
         Project newProject = new Project();
 
-        if (project == null) {
-            newProject.setTitle("Personal");
-            newProject.setDescription("My personal project");
-        } else {
-            newProject.setTitle(project.getTitle());
-            newProject.setDescription(project.getDescription());
+        if(projectDTO==null){
+            if (!isPersonalProjectInDB) {
+                newProject.setTitle("Personal");
+                newProject.setDescription("My personal project");
+            }
+            else {
+                return projectRepository.findByTitle("Personal").get();
+            }
+        }
+        else{
+            if (projectRepository.existsByTitle(projectDTO.getTitle())){
+                return projectRepository.findByTitle(projectDTO.getTitle()).get();
+            }
+            else {
+                newProject.setTitle(projectDTO.getTitle());
+                newProject.setDescription(projectDTO.getDescription());
+            }
         }
 
         newProject.setUser(user.get());
 
         return projectRepository.save(newProject);
+    }
+
+    public Project getProjectByProjectDTO(ProjectDTO projectDTO){
+        return projectRepository.findById(projectDTO.getId()).get();
+    }
+
+    private Project convertProjectRequestToProject(ProjectRequest projectRequest, User user){
+        Project project = new Project();
+        project.setTitle(projectRequest.getTitle());
+        project.setDescription(project.getDescription());
+        project.setUser(user);
+
+        return project;
+    }
+
+    private ProjectResponse convertProjectToProjectResponse(Project project){
+        ProjectResponse projectResponse = new ProjectResponse();
+        projectResponse.setId(project.getId());
+        projectResponse.setTitle(project.getTitle());
+        projectResponse.setDescription(project.getDescription());
+
+        return projectResponse;
     }
 }
