@@ -1,11 +1,11 @@
 package com.thoughtworks.taskmaster.services;
 
-import com.thoughtworks.taskmaster.exceptions.EmailExistsException;
-import com.thoughtworks.taskmaster.models.User;
 import com.thoughtworks.taskmaster.dtos.payload.request.LoginRequest;
 import com.thoughtworks.taskmaster.dtos.payload.request.SignupRequest;
-import com.thoughtworks.taskmaster.dtos.payload.responce.JwtResponse;
-import com.thoughtworks.taskmaster.dtos.payload.responce.MessageResponse;
+import com.thoughtworks.taskmaster.dtos.payload.response.JwtResponse;
+import com.thoughtworks.taskmaster.dtos.payload.response.MessageResponse;
+import com.thoughtworks.taskmaster.exceptions.EmailExistsException;
+import com.thoughtworks.taskmaster.models.User;
 import com.thoughtworks.taskmaster.repositories.TokenRepository;
 import com.thoughtworks.taskmaster.repositories.UserRepository;
 import com.thoughtworks.taskmaster.security.jwt.JwtUtils;
@@ -29,21 +29,18 @@ public class UserControllerService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
-    private final SequenceGeneratorService sequenceGeneratorService;
     private final TokenService tokenService;
 
     public UserControllerService(AuthenticationManager authenticationManager,
                                  UserRepository userRepository,
                                  PasswordEncoder encoder,
                                  JwtUtils jwtUtils,
-                                 SequenceGeneratorService sequenceGeneratorService,
                                  TokenRepository tokenRepository,
                                  TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
-        this.sequenceGeneratorService = sequenceGeneratorService;
         this.tokenService = tokenService;
     }
 
@@ -59,7 +56,6 @@ public class UserControllerService {
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()));
 
-        user.setId(sequenceGeneratorService.generateSequence(User.SEQUENCE_NAME));
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));

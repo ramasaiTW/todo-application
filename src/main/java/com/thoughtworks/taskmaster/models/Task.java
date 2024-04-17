@@ -1,30 +1,28 @@
 package com.thoughtworks.taskmaster.models;
 
-import com.thoughtworks.taskmaster.dtos.ProjectDTO;
-import com.thoughtworks.taskmaster.dtos.UserDTO;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDateTime;
 
-@Document(collection = "tasks")
+@Entity
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "task")
 public class Task {
 
-    @Transient
-    public static final String SEQUENCE_NAME = "task_sequence";
-
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String title;
     private String description;
     private int priority;
     private LocalDateTime deadline;
-    private ProjectDTO project;
-    private UserDTO user;
+    @ManyToOne
+    private Project project;
+    @ManyToOne
+    private User user;
 }
