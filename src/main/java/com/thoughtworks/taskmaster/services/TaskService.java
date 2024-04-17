@@ -1,5 +1,9 @@
 package com.thoughtworks.taskmaster.services;
 
+import com.thoughtworks.taskmaster.dtos.ProjectDTO;
+import com.thoughtworks.taskmaster.dtos.payload.request.ProjectRequest;
+import com.thoughtworks.taskmaster.dtos.payload.request.TaskRequest;
+import com.thoughtworks.taskmaster.dtos.payload.response.TaskResponse;
 import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
 import com.thoughtworks.taskmaster.models.Project;
 import com.thoughtworks.taskmaster.models.Task;
@@ -12,10 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TaskService {
@@ -38,7 +39,7 @@ public class TaskService {
         this.projectService = projectService;
     }
 
-    public ResponseEntity<List<Task>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
+    public ResponseEntity<List<TaskResponse>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -49,10 +50,17 @@ public class TaskService {
         if (tasks.isPresent() && tasks.get().isEmpty()) {
             throw new DataNotFoundException("Tasks not found!!!");
         }
-        return ResponseEntity.ok().body(tasks.get());
+
+        List<TaskResponse> taskResponses = new ArrayList<>();
+
+        for(int i=0; i<tasks.get().size(); i++){
+            taskResponses.add(convertTaskToTaskResponse(tasks.get().get(i)));
+        }
+
+        return ResponseEntity.ok().body(taskResponses);
     }
 
-    public ResponseEntity<Task> getTaskById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, int id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -63,10 +71,13 @@ public class TaskService {
         if (task.isEmpty()) {
             throw new DataNotFoundException("Task not found!!!");
         }
-        return ResponseEntity.ok().body(task.get());
+
+        TaskResponse taskResponse = convertTaskToTaskResponse(task.get());
+
+        return ResponseEntity.ok().body(taskResponse);
     }
 
-    public ResponseEntity<Task> createTask(HttpServletRequest request, Task data) {
+    public ResponseEntity<TaskResponse> createTask(HttpServletRequest request, TaskRequest taskRequestData) {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -74,50 +85,53 @@ public class TaskService {
         int userId = jwtUtils.getUserIdFromToken(request);
         Optional<User> user = userRepository.findById(userId);
 
-        Project projectDTO = data.getProject();
+        ProjectDTO projectRequest = taskRequestData.getProjectDTO();
 
-        Project project = projectService.createProjectAlongWithTask(projectDTO, userId);
+        Project project = projectService.createProjectAlongWithTask(projectRequest, userId);
 
-        data.setUser(user.get());
-        data.setProject(project);
+        Task taskData = convertTaskRequestToTask(taskRequestData, user.get(), project);
 
-        Task task = taskRepository.save(data);
+        Task task = taskRepository.save(taskData);
 
-        return ResponseEntity.ok().body(task);
+        TaskResponse taskResponse = convertTaskToTaskResponse(task);
+
+        return ResponseEntity.ok().body(taskResponse);
     }
 
-    public ResponseEntity<Task> updateTask(HttpServletRequest request, int id, Task data) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, int id, TaskRequest taskRequestData) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
         int userId = jwtUtils.getUserIdFromToken(request);
+        Optional<User> user = userRepository.findById(userId);
         Optional<Task> taskData = taskRepository.findByIdAndUser_Id(id, userId);
 
         if (taskData.isEmpty()) {
             throw new DataNotFoundException("Task not found!!!");
         }
 
-        if (data.getTitle() != null) {
-            taskData.get().setTitle(data.getTitle());
+        if (taskRequestData.getTitle() != null) {
+            taskData.get().setTitle(taskRequestData.getTitle());
         }
-        if (data.getDescription() != null) {
-            taskData.get().setDescription(data.getDescription());
+        if (taskRequestData.getDescription() != null) {
+            taskData.get().setDescription(taskRequestData.getDescription());
         }
-        if (data.getDeadline() != null) {
-            taskData.get().setDeadline(data.getDeadline());
+        if (taskRequestData.getDeadline() != null) {
+            taskData.get().setDeadline(taskRequestData.getDeadline());
         }
-        if (data.getPriority() > 0) {
-            taskData.get().setPriority(data.getPriority());
+        if (taskRequestData.getPriority() > 0) {
+            taskData.get().setPriority(taskRequestData.getPriority());
         }
-        if (data.getProject() != null) {
-            Project project = projectService.updateProjectAlongWithTask(data.getProject(), userId);
-            taskData.get().setProject(project);
+        if (taskRequestData.getProjectDTO() != null) {
+            taskData.get().setProject(projectService.getProjectByProjectDTO(taskRequestData.getProjectDTO()));
         }
 
-        taskRepository.save(taskData.get());
+        Task updatedtask = taskRepository.save(taskData.get());
 
-        return ResponseEntity.ok().body(taskData.get());
+        TaskResponse taskResponse = convertTaskToTaskResponse(updatedtask);
+
+        return ResponseEntity.ok().body(taskResponse);
     }
 
     public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, int id) throws DataNotFoundException {
@@ -131,11 +145,41 @@ public class TaskService {
         if (task.isEmpty()) {
             throw new DataNotFoundException("Task not found!!!");
         }
-
         taskRepository.delete(task.get());
+
         Map<String, Boolean> response = new HashMap<>();
         response.put("deleted", Boolean.TRUE);
 
         return ResponseEntity.ok().body(response);
+    }
+
+    private TaskResponse convertTaskToTaskResponse(Task task){
+        TaskResponse taskResponse = new TaskResponse();
+        taskResponse.setId(task.getId());
+        taskResponse.setTitle(task.getTitle());
+        taskResponse.setDescription(task.getDescription());
+        taskResponse.setPriority(task.getPriority());
+        taskResponse.setDeadline(task.getDeadline());
+
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setId(task.getProject().getId());
+        projectDTO.setTitle(task.getProject().getTitle());
+        projectDTO.setDescription(task.getProject().getDescription());
+
+        taskResponse.setProjectDTO(projectDTO);
+
+        return taskResponse;
+    }
+
+    private Task convertTaskRequestToTask(TaskRequest taskRequest, User user, Project project){
+        Task task = new Task();
+        task.setTitle(taskRequest.getTitle());
+        task.setDescription(taskRequest.getDescription());
+        task.setPriority(taskRequest.getPriority());
+        task.setDeadline(taskRequest.getDeadline());
+        task.setUser(user);
+        task.setProject(project);
+
+        return task;
     }
 }

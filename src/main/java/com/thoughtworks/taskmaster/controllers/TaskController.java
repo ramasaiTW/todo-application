@@ -1,5 +1,7 @@
 package com.thoughtworks.taskmaster.controllers;
 
+import com.thoughtworks.taskmaster.dtos.payload.request.TaskRequest;
+import com.thoughtworks.taskmaster.dtos.payload.response.TaskResponse;
 import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
 import com.thoughtworks.taskmaster.models.Task;
 import com.thoughtworks.taskmaster.services.TaskService;
@@ -20,23 +22,23 @@ public class TaskController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Task>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
+    public ResponseEntity<List<TaskResponse>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
         return taskService.getAllTasks(request);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
         return taskService.getTaskById(request, id);
     }
 
     @PostMapping()
-    public ResponseEntity<Task> createTask(HttpServletRequest request, @RequestBody Task data){
-        return taskService.createTask(request, data);
+    public ResponseEntity<TaskResponse> createTask(HttpServletRequest request, @RequestBody TaskRequest taskRequestData){
+        return taskService.createTask(request, taskRequestData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(HttpServletRequest request, @PathVariable int id, @RequestBody Task data) throws DataNotFoundException {
-        return taskService.updateTask(request, id, data);
+    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, @PathVariable int id, @RequestBody TaskRequest taskRequestData) throws DataNotFoundException {
+        return taskService.updateTask(request, id, taskRequestData);
     }
 
     @DeleteMapping("/{id}")

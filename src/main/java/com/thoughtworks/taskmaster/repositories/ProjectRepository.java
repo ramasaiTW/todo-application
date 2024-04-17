@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project, Integer> {
+public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<List<Project>> findAllByUserId(long userId);
 
     Optional<Project> findByIdAndUser_Id(long projectId, long userId);
+
+    boolean existsByTitle(String title);
+
+    Optional<Project> findByTitle(String title);
 }
