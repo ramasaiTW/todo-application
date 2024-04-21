@@ -27,7 +27,7 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, @PathVariable("id") long id) throws DataNotFoundException {
         return taskService.getTaskById(request, id);
     }
 
@@ -37,12 +37,17 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, @PathVariable int id, @RequestBody TaskRequest taskRequestData) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, @PathVariable long id, @RequestBody TaskRequest taskRequestData) throws DataNotFoundException {
         return taskService.updateTask(request, id, taskRequestData);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, @PathVariable int id) throws DataNotFoundException {
+    public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, @PathVariable long id) throws DataNotFoundException {
         return taskService.deleteTaskById(request, id);
+    }
+
+    @GetMapping("/project/{id}")
+    public ResponseEntity<List<TaskResponse>> getAllTasksByProjectId(HttpServletRequest request, @PathVariable("id") long id) throws DataNotFoundException {
+        return taskService.getAllTasksByProjectId(request, id);
     }
 }

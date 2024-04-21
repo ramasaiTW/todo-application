@@ -36,10 +36,10 @@ public class ControllerAdvices {
     private ResponseEntity<ExceptionDto> handleDataNotFoundException(ProjectAlreadyExistsException projectAlreadyExistsException) {
         ExceptionDto response = new ExceptionDto(
                 OffsetDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
                 projectAlreadyExistsException.getMessage()
         );
-        return new ResponseEntity<ExceptionDto>(response, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ExceptionDto>(response, HttpStatus.CONFLICT);
     }
 }

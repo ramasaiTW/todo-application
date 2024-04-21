@@ -4,6 +4,7 @@ import com.thoughtworks.taskmaster.dtos.ProjectDTO;
 import com.thoughtworks.taskmaster.dtos.payload.request.ProjectRequest;
 import com.thoughtworks.taskmaster.dtos.payload.response.ProjectResponse;
 import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
+import com.thoughtworks.taskmaster.exceptions.ProjectAlreadyExistsException;
 import com.thoughtworks.taskmaster.models.Project;
 import com.thoughtworks.taskmaster.models.User;
 import com.thoughtworks.taskmaster.repositories.ProjectRepository;
@@ -54,7 +55,7 @@ public class ProjectService {
         return ResponseEntity.ok().body(projectResponses);
     }
 
-    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -76,8 +77,8 @@ public class ProjectService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        if (!projectRepository.existsByTitle(projectRequestData.getTitle())){
-            throw new DataNotFoundException("Project Already In Use");
+        if (projectRepository.existsByTitle(projectRequestData.getTitle())){
+            throw new ProjectAlreadyExistsException("Project Already In Use");
         }
 
         int userId = jwtUtils.getUserIdFromToken(request);
@@ -92,7 +93,7 @@ public class ProjectService {
         return ResponseEntity.ok().body(projectResponse);
     }
 
-    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, int id, ProjectRequest projectRequestData) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, long id, ProjectRequest projectRequestData) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -117,7 +118,7 @@ public class ProjectService {
         return ResponseEntity.ok().body(projectResponse);
     }
 
-    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -135,37 +136,6 @@ public class ProjectService {
         return ResponseEntity.ok().body(response);
     }
 
-    public Project createProjectAlongWithTask(ProjectDTO projectDTO, int userId) {
-
-        Optional<User> user = userRepository.findById(userId);
-        boolean isPersonalProjectInDB = projectRepository.existsByTitle("Personal");
-
-        Project newProject = new Project();
-
-        if(projectDTO==null){
-            if (!isPersonalProjectInDB) {
-                newProject.setTitle("Personal");
-                newProject.setDescription("My personal project");
-            }
-            else {
-                return projectRepository.findByTitle("Personal").get();
-            }
-        }
-        else{
-            if (projectRepository.existsByTitle(projectDTO.getTitle())){
-                return projectRepository.findByTitle(projectDTO.getTitle()).get();
-            }
-            else {
-                newProject.setTitle(projectDTO.getTitle());
-                newProject.setDescription(projectDTO.getDescription());
-            }
-        }
-
-        newProject.setUser(user.get());
-
-        return projectRepository.save(newProject);
-    }
-
     public Project getProjectByProjectDTO(ProjectDTO projectDTO){
         return projectRepository.findById(projectDTO.getId()).get();
     }
@@ -173,7 +143,7 @@ public class ProjectService {
     private Project convertProjectRequestToProject(ProjectRequest projectRequest, User user){
         Project project = new Project();
         project.setTitle(projectRequest.getTitle());
-        project.setDescription(project.getDescription());
+        project.setDescription(projectRequest.getDescription());
         project.setUser(user);
 
         return project;

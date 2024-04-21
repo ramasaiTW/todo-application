@@ -28,7 +28,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, @PathVariable("id") int id) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> getProjectById(HttpServletRequest request, @PathVariable("id") long id) throws DataNotFoundException {
         return projectService.getProjectById(request, id);
     }
 
@@ -38,12 +38,12 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, @PathVariable int id, @RequestBody ProjectRequest projectRequestData) throws DataNotFoundException {
+    public ResponseEntity<ProjectResponse> updateProject(HttpServletRequest request, @PathVariable long id, @RequestBody ProjectRequest projectRequestData) throws DataNotFoundException {
         return projectService.updateProject(request, id, projectRequestData);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, @PathVariable int id) throws DataNotFoundException {
+    public ResponseEntity<Map<String, Boolean>> deleteProjectById(HttpServletRequest request, @PathVariable long id) throws DataNotFoundException {
         return projectService.deleteProjectById(request, id);
     }
 }
