@@ -8,6 +8,7 @@ import com.thoughtworks.taskmaster.exceptions.DataNotFoundException;
 import com.thoughtworks.taskmaster.models.Project;
 import com.thoughtworks.taskmaster.models.Task;
 import com.thoughtworks.taskmaster.models.User;
+import com.thoughtworks.taskmaster.repositories.ProjectRepository;
 import com.thoughtworks.taskmaster.repositories.TaskRepository;
 import com.thoughtworks.taskmaster.repositories.UserRepository;
 import com.thoughtworks.taskmaster.security.jwt.JwtUtils;
@@ -24,19 +25,19 @@ public class TaskService {
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final TokenService tokenService;
-
-    private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
 
     public TaskService(TaskRepository taskRepository,
                        JwtUtils jwtUtils,
                        UserRepository userRepository,
                        TokenService tokenService,
-                       ProjectService projectService) {
+                       ProjectService projectService,
+                       ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
-        this.projectService = projectService;
+        this.projectRepository = projectRepository;
     }
 
     public ResponseEntity<List<TaskResponse>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
@@ -60,7 +61,7 @@ public class TaskService {
         return ResponseEntity.ok().body(taskResponses);
     }
 
-    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -85,11 +86,13 @@ public class TaskService {
         int userId = jwtUtils.getUserIdFromToken(request);
         Optional<User> user = userRepository.findById(userId);
 
-        ProjectDTO projectRequest = taskRequestData.getProjectDTO();
+        Optional<Project> project = projectRepository.findByIdAndUser_Id(taskRequestData.getProjectId(), userId);
 
-        Project project = projectService.createProjectAlongWithTask(projectRequest, userId);
+        if(project.isEmpty()){
+            throw new DataNotFoundException("Project not found!!!");
+        }
 
-        Task taskData = convertTaskRequestToTask(taskRequestData, user.get(), project);
+        Task taskData = convertTaskRequestToTask(taskRequestData, user.get(), project.get());
 
         Task task = taskRepository.save(taskData);
 
@@ -98,7 +101,7 @@ public class TaskService {
         return ResponseEntity.ok().body(taskResponse);
     }
 
-    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, int id, TaskRequest taskRequestData) throws DataNotFoundException {
+    public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, long id, TaskRequest taskRequestData) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -123,8 +126,20 @@ public class TaskService {
         if (taskRequestData.getPriority() > 0) {
             taskData.get().setPriority(taskRequestData.getPriority());
         }
-        if (taskRequestData.getProjectDTO() != null) {
-            taskData.get().setProject(projectService.getProjectByProjectDTO(taskRequestData.getProjectDTO()));
+        if (taskRequestData.isStatus()) {
+            taskData.get().setStatus(true);
+        }
+        if (!taskRequestData.isStatus()) {
+            taskData.get().setStatus(false);
+        }
+        if (taskRequestData.getProjectId() > 0) {
+            Optional<Project> project = projectRepository.findByIdAndUser_Id(taskRequestData.getProjectId(), userId);
+
+            if(project.isEmpty()){
+                throw new DataNotFoundException("Project not found!!!");
+            }
+
+            taskData.get().setProject(project.get());
         }
 
         Task updatedtask = taskRepository.save(taskData.get());
@@ -134,7 +149,7 @@ public class TaskService {
         return ResponseEntity.ok().body(taskResponse);
     }
 
-    public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, int id) throws DataNotFoundException {
+    public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -153,6 +168,27 @@ public class TaskService {
         return ResponseEntity.ok().body(response);
     }
 
+    public ResponseEntity<List<TaskResponse>> getAllTasksByProjectId(HttpServletRequest request, long id) {
+        if (!tokenService.isValidToken(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        int userId = jwtUtils.getUserIdFromToken(request);
+        Optional<List<Task>> tasks = taskRepository.findAllByUserIdAndProjectIdOrderByDeadlineAscPriorityAsc(userId, id);
+
+        if (tasks.isPresent() && tasks.get().isEmpty()) {
+            throw new DataNotFoundException("Tasks not found!!!");
+        }
+
+        List<TaskResponse> taskResponses = new ArrayList<>();
+
+        for(int i=0; i<tasks.get().size(); i++){
+            taskResponses.add(convertTaskToTaskResponse(tasks.get().get(i)));
+        }
+
+        return ResponseEntity.ok().body(taskResponses);
+    }
+
     private TaskResponse convertTaskToTaskResponse(Task task){
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setId(task.getId());
@@ -160,6 +196,7 @@ public class TaskService {
         taskResponse.setDescription(task.getDescription());
         taskResponse.setPriority(task.getPriority());
         taskResponse.setDeadline(task.getDeadline());
+        taskResponse.setStatus(task.isStatus());
 
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setId(task.getProject().getId());
@@ -177,6 +214,7 @@ public class TaskService {
         task.setDescription(taskRequest.getDescription());
         task.setPriority(taskRequest.getPriority());
         task.setDeadline(taskRequest.getDeadline());
+        task.setStatus(false);
         task.setUser(user);
         task.setProject(project);
 

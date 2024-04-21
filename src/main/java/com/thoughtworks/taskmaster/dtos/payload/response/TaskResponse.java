@@ -18,5 +18,6 @@ public class TaskResponse {
     private String description;
     private int priority;
     private LocalDateTime deadline;
+    private boolean status;
     private ProjectDTO projectDTO;
 }

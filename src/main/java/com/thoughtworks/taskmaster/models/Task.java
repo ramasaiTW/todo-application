@@ -21,6 +21,7 @@ public class Task {
     private String description;
     private int priority;
     private LocalDateTime deadline;
+    private boolean status;
     @ManyToOne
     private Project project;
     @ManyToOne

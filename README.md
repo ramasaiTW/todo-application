@@ -22,7 +22,7 @@ TaskMaster is like a special tool to help people get things done. You and your t
 ***Fix Bugs:*** Sometimes things don't work the way they should. Your job is to find those problems and fix them so TaskMaster runs smoothly for everyone.
 
 ## Requirements:
-This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing. Data will store on MongoDB
+This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven for dependency management. Swagger is integrated into the project for API documentation and testing. Data will store on SQLite
 
 - Java 17 or higher.
 - Spring Boot 3
@@ -30,59 +30,12 @@ This project is developed using Java 17 and Spring Boot 3, and it utilizes Maven
 - Maven
 - JWT
 - Swagger UI
-- MongoDB
+- SQLite
 
-### Download MongoDB
-- Go to the MongoDB download page: MongoDB Download
-- Choose the appropriate version for Windows.
-- Download and Install MongoDB
-#### Start MongoDB Server
-Open a command prompt with administrative privileges (right-click on Command Prompt and select "Run as administrator").
-Run the following command to start the MongoDB server:
-#### Windows
-```
-mongod
-```
-or
-```
-net start MongoDB
-```
-#### MacOS
-```
-brew services start mongodb
-```
-
-#### Install MongoDB Compass
-Ensure that the "Install MongoDB Compass" option is selected if you want to install Compass.
-
-In MongoDB Compass, you need to connect to your MongoDB server. Click on the "Connect" button on the welcome screen or use the "New Connection" button if you're already connected to a server.
-
-#### Create New Database
-To create a new database, click on the "Create Database" button, usually located at the bottom of the database list.
-
-#### Enter Database Name
-Enter the name as "taskmaster" of your new database name in the "Database Name" field.
-Once you've entered the desired database name and settings, click on the "Create" button to create the new database.
-
-## Spring and DB connection
-In this application, you need to configure the connection properties for your chosen database. This is usually done in the application.properties.
-Check the connection details.
-
-```
-#MongoDB
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.database=taskmaster
-```
 ## Useful Maven Commands
 The project uses Maven for dependency management and building. Here are some useful
 Maven commands:
 
-### List all Maven tasks
-To list all the tasks that Maven can do, such as build and test, run:
-```
-mvn help:describe -Dcmd=help
-```
 ### Build the project
 To compile the project and create an executable JAR file, run:
 ```

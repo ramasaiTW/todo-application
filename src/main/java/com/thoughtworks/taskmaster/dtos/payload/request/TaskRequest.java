@@ -20,5 +20,6 @@ public class TaskRequest {
     private String description;
     private int priority;
     private LocalDateTime deadline;
-    private ProjectDTO projectDTO;
+    private boolean status;
+    private long projectId;
 }
