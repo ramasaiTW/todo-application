@@ -37,3 +37,7 @@ build/
 
 ### SQLite DB ###
 *.db
+
+# Log file
+*.log
+
