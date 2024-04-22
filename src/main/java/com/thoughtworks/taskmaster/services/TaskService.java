@@ -1,5 +1,6 @@
 package com.thoughtworks.taskmaster.services;
 
+import com.thoughtworks.taskmaster.annotations.Log;
 import com.thoughtworks.taskmaster.dtos.ProjectDTO;
 import com.thoughtworks.taskmaster.dtos.payload.request.ProjectRequest;
 import com.thoughtworks.taskmaster.dtos.payload.request.TaskRequest;
@@ -13,6 +14,8 @@ import com.thoughtworks.taskmaster.repositories.TaskRepository;
 import com.thoughtworks.taskmaster.repositories.UserRepository;
 import com.thoughtworks.taskmaster.security.jwt.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,8 @@ import java.util.*;
 
 @Service
 public class TaskService {
+
+    Logger logger= LogManager.getLogger(TaskService.class);
     private final TaskRepository taskRepository;
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
@@ -39,9 +44,10 @@ public class TaskService {
         this.tokenService = tokenService;
         this.projectRepository = projectRepository;
     }
-
+    @Log
     public ResponseEntity<List<TaskResponse>> getAllTasks(HttpServletRequest request) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -57,12 +63,14 @@ public class TaskService {
         for(int i=0; i<tasks.get().size(); i++){
             taskResponses.add(convertTaskToTaskResponse(tasks.get().get(i)));
         }
-
+        logger.info("All Tasks fetched successfully");
         return ResponseEntity.ok().body(taskResponses);
     }
 
+    @Log
     public ResponseEntity<TaskResponse> getTaskById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -75,11 +83,13 @@ public class TaskService {
 
         TaskResponse taskResponse = convertTaskToTaskResponse(task.get());
 
+        logger.info("Task fetched successfully");
         return ResponseEntity.ok().body(taskResponse);
     }
-
+    @Log
     public ResponseEntity<TaskResponse> createTask(HttpServletRequest request, TaskRequest taskRequestData) {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -98,11 +108,15 @@ public class TaskService {
 
         TaskResponse taskResponse = convertTaskToTaskResponse(task);
 
+        logger.info("Task created successfully");
+
         return ResponseEntity.ok().body(taskResponse);
     }
 
+    @Log
     public ResponseEntity<TaskResponse> updateTask(HttpServletRequest request, long id, TaskRequest taskRequestData) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -146,11 +160,14 @@ public class TaskService {
 
         TaskResponse taskResponse = convertTaskToTaskResponse(updatedtask);
 
+        logger.info("Task updated successfully");
         return ResponseEntity.ok().body(taskResponse);
     }
 
+    @Log
     public ResponseEntity<Map<String, Boolean>> deleteTaskById(HttpServletRequest request, long id) throws DataNotFoundException {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -164,12 +181,14 @@ public class TaskService {
 
         Map<String, Boolean> response = new HashMap<>();
         response.put("deleted", Boolean.TRUE);
-
+        logger.info("Task deleted successfully");
         return ResponseEntity.ok().body(response);
     }
 
+    @Log
     public ResponseEntity<List<TaskResponse>> getAllTasksByProjectId(HttpServletRequest request, long id) {
         if (!tokenService.isValidToken(request)) {
+            logger.error("User Unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -185,10 +204,11 @@ public class TaskService {
         for(int i=0; i<tasks.get().size(); i++){
             taskResponses.add(convertTaskToTaskResponse(tasks.get().get(i)));
         }
-
+        logger.info("Fetched all tasks of the project");
         return ResponseEntity.ok().body(taskResponses);
     }
 
+    @Log
     private TaskResponse convertTaskToTaskResponse(Task task){
         TaskResponse taskResponse = new TaskResponse();
         taskResponse.setId(task.getId());
@@ -205,9 +225,11 @@ public class TaskService {
 
         taskResponse.setProjectDTO(projectDTO);
 
+        logger.info("Converted Task to TaskResponse successfully ");
+
         return taskResponse;
     }
-
+    @Log
     private Task convertTaskRequestToTask(TaskRequest taskRequest, User user, Project project){
         Task task = new Task();
         task.setTitle(taskRequest.getTitle());
@@ -218,6 +240,7 @@ public class TaskService {
         task.setUser(user);
         task.setProject(project);
 
+        logger.info("Converted TaskRequest to Task successfully ");
         return task;
     }
 }

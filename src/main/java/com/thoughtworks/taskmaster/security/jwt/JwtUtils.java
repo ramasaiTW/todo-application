@@ -1,5 +1,6 @@
 package com.thoughtworks.taskmaster.security.jwt;
 
+import com.thoughtworks.taskmaster.annotations.Log;
 import com.thoughtworks.taskmaster.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -23,6 +24,7 @@ public class JwtUtils {
     @Value("${tw.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
+    @Log
     public String generateJwtToken(Authentication authentication) {
 
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -40,11 +42,13 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
+    @Log
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
+    @Log
     public Integer getUserIdFromToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         String userId = Jwts.parserBuilder().setSigningKey(key()).build()
@@ -52,7 +56,7 @@ public class JwtUtils {
 
         return Integer.parseInt(userId);
     }
-
+    @Log
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
